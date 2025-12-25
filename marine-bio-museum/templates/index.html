@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江苏海洋生物多样性科普馆</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>🌊 江苏海洋生物多样性科普馆</h1>
+        <p>遗传·物种·生态系统 | 全方位立体展示江苏海域生物资源</p>
+        <div class="nav">
+            <button class="active" onclick="showSection('home')">首页</button>
+            <button onclick="showSection('species')">物种图谱</button>
+            <button onclick="showSection('endangered')">濒危物种</button>
+            <button onclick="showSection('invasive')">外来入侵</button>
+            <button onclick="showSection('data')">数据统计</button>
+            <button onclick="showSection('about')">关于项目</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 首页 -->
+        <div id="home" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">📊 物种总数</div>
+                    <div class="stat-number">1,247</div>
+                    <div class="stat-label">已录入物种</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🔴 濒危物种</div>
+                    <div class="stat-number">83</div>
+                    <div class="stat-label">红色名录易危及以上</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🛡️ 重点保护</div>
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">国家重点保护动植物</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">⚠️ 入侵物种</div>
+                    <div class="stat-number">27</div>
+                    <div class="stat-label">外来入侵物种</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🏆 江苏海域主要物种类群分布</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">鱼类</div>
+                        <div class="bar-fill" style="width: 85%;">
+                            <div class="bar-value">423种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">底栖生物</div>
+                        <div class="bar-fill" style="width: 65%;">
+                            <div class="bar-value">312种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">海鸟</div>
+                        <div class="bar-fill" style="width: 45%;">
+                            <div class="bar-value">187种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">滩涂植物</div>
+                        <div class="bar-fill" style="width: 55%;">
+                            <div class="bar-value">234种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">微生物</div>
+                        <div class="bar-fill" style="width: 25%;">
+                            <div class="bar-value">91种</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 物种图谱 -->
+        <div id="species" class="section">
+            <input type="text" class="search-bar" placeholder="🔍 搜索物种名称、拉丁名或关键词..." oninput="filterSpecies(this.value)">
+
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByCategory('all')">全部</button>
+                <button class="filter-btn" onclick="filterByCategory('fish')">鱼类</button>
+                <button class="filter-btn" onclick="filterByCategory('bird')">海鸟</button>
+                <button class="filter-btn" onclick="filterByCategory('benthos')">底栖生物</button>
+                <button class="filter-btn" onclick="filterByCategory('plant')">滩涂植物</button>
+            </div>
+
+            <div class="species-grid" id="speciesGrid"></div>
+        </div>
+
+        <!-- 濒危物种 -->
+        <div id="endangered" class="section">
+            <h2 style="margin-bottom: 2rem; color: #e74c3c;">🔴 濒危物种保护名录</h2>
+            <p style="margin-bottom: 2rem; color: #bdc3c7;">以下物种被列入IUCN红色名录易危(VU)及以上等级,需要重点保护和监测</p>
+            <div class="species-grid" id="endangeredGrid"></div>
+        </div>
+
+        <!-- 外来入侵物种 -->
+        <div id="invasive" class="section">
+            <h2 style="margin-bottom: 2rem; color: #f39c12;">⚠️ 外来入侵物种监测</h2>
+            <p style="margin-bottom: 2rem; color: #bdc3c7;">这些外来物种对江苏海域生态系统构成威胁,需要持续监测和管控</p>
+            <div class="species-grid" id="invasiveGrid"></div>
+        </div>
+
+        <!-- 数据统计 -->
+        <div id="data" class="section">
+            <h2 style="margin-bottom: 2rem;">📊 生物多样性数据分析</h2>
+
+            <div class="chart-container">
+                <div class="chart-title">保护等级分布</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">国家一级保护</div>
+                        <div class="bar-fill" style="width: 20%; background: linear-gradient(90deg, #e74c3c, #c0392b);">
+                            <div class="bar-value">31种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">国家二级保护</div>
+                        <div class="bar-fill" style="width: 40%; background: linear-gradient(90deg, #f39c12, #e67e22);">
+                            <div class="bar-value">125种</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">省级保护</div>
+                        <div class="bar-fill" style="width: 60%; background: linear-gradient(90deg, #3498db, #2980b9);">
+                            <div class="bar-value">267种</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">eDNA技术应用覆盖率</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">已完成基因测序</div>
+                        <div class="info-value">876 物种</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">声纹数据库</div>
+                        <div class="info-value">234 物种</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">数字标本</div>
+                        <div class="info-value">1,156 份</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">现场实景照片</div>
+                        <div class="info-value">3,428 张</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关于项目 -->
+        <div id="about" class="section">
+            <h2 style="margin-bottom: 2rem;">🎯 项目概况</h2>
+
+            <div class="chart-container">
+                <h3 style="color: #3498db; margin-bottom: 1rem;">三层次立体展示体系</h3>
+                <div class="info-grid" style="grid-template-columns: 1fr;">
+                    <div class="info-item" style="border-left-color: #e74c3c;">
+                        <div class="info-label">遗传层次</div>
+                        <div class="info-value" style="font-size: 1rem; font-weight: normal; margin-top: 0.5rem;">
+                            运用高通量测序技术,建立基因序列数据库,记录物种遗传信息和种群遗传多样性
+                        </div>
+                    </div>
+                    <div class="info-item" style="border-left-color: #f39c12;">
+                        <div class="info-label">物种层次</div>
+                        <div class="info-value" style="font-size: 1rem; font-weight: normal; margin-top: 0.5rem;">
+                            整理物种图谱、声纹信息,建立数字标本库,全面展示江苏海域物种组成和特征
+                        </div>
+                    </div>
+                    <div class="info-item" style="border-left-color: #2ecc71;">
+                        <div class="info-label">生态系统层次</div>
+                        <div class="info-value" style="font-size: 1rem; font-weight: normal; margin-top: 0.5rem;">
+                            通过现场实景记录,展示物种在生态系统中的作用和相互关系,揭示生态环境变化
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="color: #3498db; margin-bottom: 1rem;">技术特色</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">🧬 eDNA技术</div>
+                        <div class="info-value" style="font-size: 0.95rem;">环境DNA宏条形码分析</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">🔬 高通量测序</div>
+                        <div class="info-value" style="font-size: 0.95rem;">基因组学分析平台</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">🎵 声纹识别</div>
+                        <div class="info-value" style="font-size: 0.95rem;">生物声学监测系统</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">📷 影像采集</div>
+                        <div class="info-value" style="font-size: 0.95rem;">水下摄影和无人机</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="color: #3498db; margin-bottom: 1rem;">数据库架构</h3>
+                <p style="color: #bdc3c7; line-height: 1.8;">
+                    本系统采用现代化的数据管理架构,包括物种信息数据库、基因序列数据库、声纹数据库、图像数据库和生态监测数据库。
+                    支持多维度检索、数据可视化分析和动态更新。后台管理系统支持数据录入、审核、统计分析等功能,
+                    可与国家海洋生物多样性数据平台进行数据共享和交换。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物种详情弹窗 -->
+    <div class="detail-modal" id="detailModal">
+        <div class="detail-content">
+            <button class="close-btn" onclick="closeDetail()">×</button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

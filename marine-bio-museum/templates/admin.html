@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - 江苏海洋生物多样性科普馆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        button.delete {
+            background: #e74c3c;
+        }
+
+        button.delete:hover {
+            background: #c0392b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: #667eea;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+
+        .tag.endangered {
+            background: #e74c3c;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回前台</a>
+        <h1>🔧 后台管理系统</h1>
+
+        <div class="stats" id="statsContainer"></div>
+
+        <div class="actions">
+            <button onclick="showAddModal()">➕ 添加物种</button>
+            <button onclick="loadSpecies()">🔄 刷新列表</button>
+        </div>
+
+        <table id="speciesTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>中文名</th>
+                    <th>拉丁名</th>
+                    <th>类别</th>
+                    <th>保护等级</th>
+                    <th>濒危状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 添加/编辑模态框 -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">添加物种</h2>
+            <form id="speciesForm">
+                <input type="hidden" id="editId">
+
+                <div class="form-group">
+                    <label>中文名 *</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>拉丁学名 *</label>
+                    <input type="text" id="latinName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>物种类别 *</label>
+                    <select id="category" required>
+                        <option value="fish">鱼类及海洋哺乳动物</option>
+                        <option value="bird">海鸟</option>
+                        <option value="benthos">底栖生物</option>
+                        <option value="plant">滩涂湿地植物</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Emoji图标</label>
+                    <input type="text" id="emoji" placeholder="🐟">
+                </div>
+
+                <div class="form-group">
+                    <label>保护等级</label>
+                    <input type="text" id="protection" placeholder="例如：国家一级">
+                </div>
+
+                <div class="form-group">
+                    <label>IUCN红色名录等级</label>
+                    <select id="iucnStatus">
+                        <option value="">无</option>
+                        <option value="CR">CR - 极危</option>
+                        <option value="EN">EN - 濒危</option>
+                        <option value="VU">VU - 易危</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>物种描述</label>
+                    <textarea id="description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>栖息地</label>
+                    <input type="text" id="habitat">
+                </div>
+
+                <div class="form-group">
+                    <label>遗传信息</label>
+                    <textarea id="genes"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="hasSound"> 有声纹数据
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isInvasive"> 外来入侵物种
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal()">取消</button>
+                    <button type="submit">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/stats`);
+                const data = await response.json();
+
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card">
+                        <div>物种总数</div>
+                        <div class="stat-number">${data.total}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>濒危物种</div>
+                        <div class="stat-number">${data.endangered}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>重点保护</div>
+                        <div class="stat-number">${data.protected}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>入侵物种</div>
+                        <div class="stat-number">${data.invasive}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        // 加载物种列表
+        async function loadSpecies() {
+            try {
+                const response = await fetch(`${API_URL}/species`);
+                const species = await response.json();
+
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = species.map(s => `
+                    <tr>
+                        <td>${s.id}</td>
+                        <td>${s.emoji || ''} ${s.name}</td>
+                        <td><i>${s.latin}</i></td>
+                        <td>${getCategoryName(s.category)}</td>
+                        <td>${s.protection || '-'}</td>
+                        <td>
+                            ${s.endangered ? `<span class="tag endangered">${s.endangered}</span>` : '-'}
+                            ${s.invasive ? '<span class="tag" style="background: #f39c12;">入侵</span>' : ''}
+                        </td>
+                        <td>
+                            <button onclick="editSpecies(${s.id})">编辑</button>
+                            <button class="delete" onclick="deleteSpecies(${s.id})">删除</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                loadStats();
+            } catch (error) {
+                alert('加载数据失败，请确保后端服务已启动');
+                console.error(error);
+            }
+        }
+
+        // 显示添加模态框
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = '添加物种';
+            document.getElementById('speciesForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // 编辑物种
+        async function editSpecies(id) {
+            try {
+                const response = await fetch(`${API_URL}/species`);
+                const species = await response.json();
+                const s = species.find(item => item.id === id);
+
+                if (!s) return;
+
+                document.getElementById('modalTitle').textContent = '编辑物种';
+                document.getElementById('editId').value = s.id;
+                document.getElementById('name').value = s.name;
+                document.getElementById('latinName').value = s.latin;
+                document.getElementById('category').value = s.category;
+                document.getElementById('emoji').value = s.emoji || '';
+                document.getElementById('protection').value = s.protection || '';
+                document.getElementById('iucnStatus').value = s.endangered || '';
+                document.getElementById('description').value = s.description || '';
+                document.getElementById('habitat').value = s.habitat || '';
+                document.getElementById('genes').value = s.genes || '';
+                document.getElementById('hasSound').checked = s.sound;
+                document.getElementById('isInvasive').checked = s.invasive;
+
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) {
+                console.error('加载物种详情失败:', error);
+            }
+        }
+
+        // 删除物种
+        async function deleteSpecies(id) {
+            if (!confirm('确定要删除这个物种吗？')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/species/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('删除成功！');
+                    loadSpecies();
+                }
+            } catch (error) {
+                alert('删除失败');
+                console.error(error);
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        // 提交表单
+        document.getElementById('speciesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('editId').value;
+            const data = {
+                name: document.getElementById('name').value,
+                latin_name: document.getElementById('latinName').value,
+                category: document.getElementById('category').value,
+                emoji: document.getElementById('emoji').value,
+                protection_level: document.getElementById('protection').value,
+                iucn_status: document.getElementById('iucnStatus').value || null,
+                description: document.getElementById('description').value,
+                habitat: document.getElementById('habitat').value,
+                genes: document.getElementById('genes').value,
+                has_sound: document.getElementById('hasSound').checked,
+                is_invasive: document.getElementById('isInvasive').checked
+            };
+
+            try {
+                const url = id ? `${API_URL}/species/${id}` : `${API_URL}/species`;
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert(id ? '更新成功！' : '添加成功！');
+                    closeModal();
+                    loadSpecies();
+                }
+            } catch (error) {
+                alert('操作失败');
+                console.error(error);
+            }
+        });
+
+        function getCategoryName(category) {
+            const names = {
+                'fish': '鱼类',
+                'bird': '海鸟',
+                'benthos': '底栖生物',
+                'plant': '滩涂植物'
+            };
+            return names[category] || category;
+        }
+
+        // 页面加载时加载数据
+        loadSpecies();
+    </script>
+</body>
+</html>
